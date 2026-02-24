@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>波兰电影文化负载词语料库</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #e67e22;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+            margin-top: -5px;
+            margin-bottom: 25px;
+        }
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 12px 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #e67e22;
+        }
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 160px;
+        }
+        .filter-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 0.9em;
+        }
+        .filter-group select, .filter-group input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        button {
+            background-color: #e67e22;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #d35400;
+        }
+        button.secondary {
+            background-color: #95a5a6;
+        }
+        button.secondary:hover {
+            background-color: #7f8c8d;
+        }
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+        th {
+            background-color: #2c3e50;
+            color: white;
+            padding: 12px 10px;
+            text-align: left;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+        th:hover {
+            background-color: #34495e;
+        }
+        th::after {
+            content: '↕️';
+            position: absolute;
+            right: 8px;
+            opacity: 0.5;
+            font-size: 0.8em;
+        }
+        th.sort-asc::after {
+            content: '↑';
+            opacity: 1;
+        }
+        th.sort-desc::after {
+            content: '↓';
+            opacity: 1;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ecf0f1;
+            vertical-align: top;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .movie-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: white;
+        }
+        .movie-VINCI {
+            background-color: #27ae60;
+        }
+        .movie-ZIMNA {
+            background-color: #2980b9;
+        }
+        .category-tag {
+            display: inline-block;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            background-color: #f39c12;
+            color: white;
+        }
+        .strategy-tag {
+            display: inline-block;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            background-color: #9b59b6;
+            color: white;
+            margin-right: 3px;
+            margin-bottom: 3px;
+        }
+        .note-cell {
+            max-width: 250px;
+            color: #555;
+            font-size: 0.9em;
+        }
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-style: italic;
+        }
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎬 波兰电影文化负载词语料库</h1>
+    <div class="subtitle">来源电影：《盗走达芬奇》(VINCI) 与《冷战》(Zimna wojna) | 人工标注 · 交叉校验</div>
+    
+    <div class="stats" id="statsContainer">
+        <!-- 统计数据会通过JS动态生成 -->
+    </div>
+
+    <div class="filters">
+        <div class="filter-group">
+            <label for="movieFilter">电影筛选：</label>
+            <select id="movieFilter">
+                <option value="全部">全部电影</option>
+                <option value="VINCI（盗走达芬奇）">盗走达芬奇</option>
+                <option value="Zimna wojna(冷战)">冷战</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="categoryFilter">文化分类：</label>
+            <select id="categoryFilter">
+                <option value="全部">全部分类</option>
+                <option value="物质文化">物质文化</option>
+                <option value="社会文化">社会文化</option>
+                <option value="观念文化">观念文化</option>
+                <option value="语言文化">语言文化</option>
+                <option value="生态文化">生态文化</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="strategyFilter">翻译策略：</label>
+            <select id="strategyFilter">
+                <option value="全部">全部策略</option>
+                <option value="直译">直译</option>
+                <option value="意译">意译</option>
+                <option value="替代">替代</option>
+                <option value="音译">音译</option>
+                <option value="加注">加注</option>
+                <option value="省略">省略</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="searchInput">关键词搜索：</label>
+            <input type="text" id="searchInput" placeholder="搜索原文、译文或备注...">
+        </div>
+        <div class="filter-actions">
+            <button onclick="resetFilters()" class="secondary">重置筛选</button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table id="corpusTable">
+            <thead>
+                <tr id="tableHeader">
+                    <th data-sort="movie">电影</th>
+                    <th data-sort="original">原文 (波兰语)</th>
+                    <th data-sort="translation">译文 (中文)</th>
+                    <th data-sort="category">文化分类</th>
+                    <th data-sort="strategy">翻译策略</th>
+                    <th data-sort="note">备注/分析</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- 数据会通过JavaScript动态加载 -->
+            </tbody>
+        </table>
+    </div>
+    <footer>
+        <p>波兰电影文化负载词研究项目 · 人工标注语料库 | 共 <span id="totalCount">0</span> 条词条</p>
+    </footer>
+
+    <script>
+        // ==================== 数 据 定 义 ====================
+        // 根据你提供的Excel文件整理的语料库数据
+        const corpusData = [
+            // 盗走达芬奇 (VINCI) 数据
+            { id: 1, movie: "VINCI（盗走达芬奇）", original: "kiler", translation: "杀手", category: "社会文化", strategy: "直译", note: "此处“kiler”为黑话特指顶级杀手，直译“杀手”损失了其行业内部评价的色彩。" },
+            { id: 2, movie: "VINCI（盗走达芬奇）", original: "zajebiste", translation: "好屌的", category: "语言文化", strategy: "替代", note: "“zajebiste”是波兰粗口式强褒义俚语，此处翻译以中文粗口对应实现语用对等，但丢失波兰本土俚语的语言文化独特性。" },
+            { id: 3, movie: "VINCI（盗走达芬奇）", original: "Pani", translation: "小姐", category: "社会文化", strategy: "直译", note: "“Pani”为波兰成年女性礼貌尊称，暗含已婚或正式身份，中文译作 “小姐” 丢失波兰称谓体系里的社会文化内涵，性别礼仪对应错位。" },
+            { id: 4, movie: "VINCI（盗走达芬奇）", original: "doktorze", translation: "医生", category: "社会文化", strategy: "直译", note: "“doktorze”使用呼格，是波兰职业敬称，直译“医生”仅保留职业语义，丢失波兰社会普遍敬称的礼仪文化内涵。" },
+            { id: 5, movie: "VINCI（盗走达芬奇）", original: "pan", translation: "/", category: "社会文化", strategy: "省略", note: "“pan”是波兰对男性的尊称，汉语社交称谓无对应尊称体系，为符合中文表达习惯而省略，弱化了波兰语尊称体现的礼貌与身份层级。" },
+            { id: 6, movie: "VINCI（盗走达芬奇）", original: "gówniarz", translation: "懒人屎尿多", category: "语言文化", strategy: "替代", note: "“gówniarz”是波兰俚语中骂小孩或弱者的粗口，字面带“屎尿”色彩，用汉语熟语“懒人屎尿多”进行替代，文化功能对等，但丢失原词直白粗俗的语言文化色彩。" },
+            { id: 7, movie: "VINCI（盗走达芬奇）", original: "panie władzo", translation: "警长", category: "社会文化", strategy: "意译", note: "“panie władzo”是波兰对权威者的传统敬语，带敬畏、谦卑色彩，译文用更自然的身份称呼替代了原敬语，语义窄化，将泛称的敬语限定为具体身份，省略了原词的礼仪文化色彩。" },
+            { id: 8, movie: "VINCI（盗走达芬奇）", original: "Dama z gronostajem/Dama z łasiczką", translation: "“抱银鼠的女子”/“抱银鼬的女子”", category: "物质文化", strategy: "直译", note: "专有文化专有名词直译" },
+            { id: 9, movie: "VINCI（盗走达芬奇）", original: "książę Adama Czartoryski", translation: "札托里斯基伯爵", category: "观念文化", strategy: "直译", note: "“książę Adama Czartoryski”是波兰重要贵族和历史人物，此处为专有名词直译，属于历史文化负载词。" },
+            { id: 10, movie: "VINCI（盗走达芬奇）", original: "pasta", translation: "/", category: "语言文化", strategy: "意译,替代", note: "“pasta”在波兰语中可以指意大利面食，但更多用来指鞋油、膏状物。译文以文化归化翻译，换成了中国人能懂的语言梗，保留幽默效果。" },
+            { id: 11, movie: "VINCI（盗走达芬奇）", original: "najcenniejszy obraz w tym kraju", translation: "波兰的国宝", category: "物质文化", strategy: "意译", note: "“najcenniejszy obraz w tym kraju”特指波兰最珍贵的画作，带有波兰独有的艺术文化与国家价值，意译为“国宝”，强调其地位，属于国家象征文化" },
+            { id: 12, movie: "VINCI（盗走达芬奇）", original: "kurwa", translation: "妈的", category: "语言文化", strategy: "替代", note: "“kurwa”是波兰语中使用频率极高、文化特色极强的感叹粗口，在中文里没有完全对应的词，只能用汉语里功能和语气相当的脏话“妈的”进行文化归化翻译。" },
+            { id: 13, movie: "VINCI（盗走达芬奇）", original: "ja cię pierdolę", translation: "我的天哪", category: "语言文化", strategy: "替代", note: "“ja cię pierdolę”属于波兰语中极强烈的整句粗俗语，是波兰口语文化里特有的表达方式，中文无完全对应字面，只能用功能对等的脏话或感叹词翻译" },
+            { id: 14, movie: "VINCI（盗走达芬奇）", original: "Wielkanoc", translation: "复活节", category: "社会文化", strategy: "直译", note: "“Wielkanoc”指波兰的复活节，是波兰最重要的传统宗教节日之一，具有浓厚的基督教与民俗文化内涵。" },
+            { id: 15, movie: "VINCI（盗走达芬奇）", original: "pisanka", translation: "彩蛋", category: "社会文化", strategy: "直译", note: "波兰特有的手绘复活节彩蛋，是复活节的标志性传统物品，属于波兰独有的民俗文化符号。" },
+            { id: 16, movie: "VINCI（盗走达芬奇）", original: "Bitwa pod Grunwaldem", translation: "格伦瓦战役", category: "观念文化", strategy: "直译", note: "格伦瓦德之战是波兰历史上最具象征意义的民族胜利战役，是波兰民族身份、历史记忆的核心符号。" },
+            { id: 17, movie: "VINCI（盗走达芬奇）", original: "wilno", translation: "威涅", category: "物质文化", strategy: "直译", note: "Wilno（威涅）在波兰历史、文化、文学中是极其重要的符号城市，曾是波兰第二共和国的大城市，对波兰民族历史、文化认同有特殊分量。" },
+            { id: 18, movie: "VINCI（盗走达芬奇）", original: "Krynica", translation: "克里尼兹", category: "物质文化", strategy: "直译", note: "Krynica（克里尼兹）是波兰非常有名的矿泉疗养地、度假胜地，属于波兰人普遍熟知的地名。" },
+            { id: 19, movie: "VINCI（盗走达芬奇）", original: "admirała Nelsona", translation: "纳尔逊", category: "观念文化", strategy: "直译", note: "admirała Nelsona是真实存在、带有历史地位的历史人物专有名词，是英国历史上最著名的海军英雄、西方历史文化中标志性人物，具有特定历史身份与文化象征意义。" },
+            { id: 20, movie: "VINCI（盗走达芬奇）", original: "Muzeum Narodowego", translation: "国立博物馆", category: "社会文化", strategy: "直译", note: "波兰国立博物馆，是波兰国家级文化机构，承载国家艺术收藏、文化遗产的含义。" },
+            { id: 21, movie: "VINCI（盗走达芬奇）", original: "mistrzostwo Europy", translation: "欧锦赛", category: "社会文化", strategy: "直译", note: "mistrzostwo Europy 指欧洲足球锦标赛（欧洲杯），是欧洲极具影响力的体育赛事，在波兰社会是大众熟知的文化符号。" },
+            { id: 22, movie: "VINCI（盗走达芬奇）", original: "Strzeżonego pan Bóg strzeże.", translation: "不怕一万，就怕万一。", category: "语言文化", strategy: "替代", note: "这句话是波兰经典谚语，直译为“上帝守护谨慎之人”，中文里没有完全对应的字面，只能用功能相同的汉语谚语“不怕一万，就怕万一”替代。" },
+            { id: 23, movie: "VINCI（盗走达芬奇）", original: "Kto daje i odbiera…", translation: "出尔反尔。", category: "语言文化", strategy: "替代", note: "为波兰语固定谚语，有特定文化含义，译文准确传达原意、符合中文习惯，但丢失了波兰谚语的字面动作意象与语言文化特色。" },
+            { id: 24, movie: "VINCI（盗走达芬奇）", original: "Teatr im. Juliusza Słowackiego", translation: "斯沃瓦茨基剧院", category: "社会文化", strategy: "直译", note: "译文保留专有名词指称，但丢失其作为波兰国家级历史文化地标与艺术象征的内涵。" },
+            { id: 25, movie: "VINCI（盗走达芬奇）", original: "imieniny", translation: "圣名日", category: "社会文化", strategy: "直译", note: "译文直译，对应原词概念，但丢失波兰以圣名日为重要家庭节庆的独特民俗内涵。" },
+            { id: 26, movie: "VINCI（盗走达芬奇）", original: "Kalwaria Zebrzydowska", translation: "卡尔瓦利亚泽布多斯卡", category: "社会文化", strategy: "直译", note: "译文仅保留地名，丢失其作为波兰重要宗教文化遗产与朝圣地的文化内涵。" },
+            { id: 27, movie: "VINCI（盗走达芬奇）", original: "Kalwaria", translation: "/", category: "社会文化", strategy: "省略", note: "译文对Kalwaria进行省略，只传递信息正确性，丢失波兰地名宗教内涵。" },
+            { id: 28, movie: "VINCI（盗走达芬奇）", original: "cara", translation: "/", category: "观念文化", strategy: "省略", note: "cara意为沙皇，译文对全句采用意译，丢失原文借沙皇形象表达的历史文化色彩与惊讶语气。" },
+            { id: 29, movie: "VINCI（盗走达芬奇）", original: "Jezu", translation: "天哪", category: "观念文化", strategy: "意译", note: "意译为“天哪”传递情绪，符合中文口语，保留观念文化关联，但丢失波兰日常宗教感叹的文化特征。" },
+            { id: 30, movie: "VINCI（盗走达芬奇）", original: "kurwa", translation: "靠", category: "语言文化", strategy: "意译", note: "kurwa是波兰粗鄙感叹词，意译为“靠”，既传递核心情绪，又符合中文口语接受度。" },
+            { id: 31, movie: "VINCI（盗走达芬奇）", original: "gówno", translation: "/", category: "语言文化", strategy: "省略", note: "传递不满情绪，符合中文口语。" },
+            { id: 32, movie: "VINCI（盗走达芬奇）", original: "Jezus Maria", translation: "天哪", category: "观念文化", strategy: "意译", note: "Jezus Maria即耶稣玛利亚，译文保留宗教感叹形式，体现波兰日常宗教表达习惯，但未传递深层宗教文化背景。" },
+            { id: 33, movie: "VINCI（盗走达芬奇）", original: "ciul", translation: "猪头", category: "语言文化", strategy: "替代", note: "ciul为波兰语脏话，表强烈贬义，此处用中文语境下的脏话进行替代。" },
+            { id: 34, movie: "VINCI（盗走达芬奇）", original: "TVN", translation: "/", category: "社会文化", strategy: "省略", note: "TVN是波兰普通电视台名称，为专有名词" },
+            { id: 35, movie: "VINCI（盗走达芬奇）", original: "O w dupę!", translation: "妈的", category: "语言文化", strategy: "替代", note: "意译为“妈的”传递核心情绪，括号补充字面义，符合中文口语接受度" },
+            { id: 36, movie: "VINCI（盗走达芬奇）", original: "Ruskich", translation: "俄国佬", category: "社会文化", strategy: "直译", note: "译文体现口语化态度，保留原文中波兰民间对俄的刻板印象与语境色彩。" },
+            { id: 37, movie: "VINCI（盗走达芬奇）", original: "Mamusia", translation: "老妈", category: "社会文化", strategy: "意译", note: "“Mamusia”译为“老妈”保留亲昵感，符合家人间关切场景，又符合语境" },
+            { id: 38, movie: "VINCI（盗走达芬奇）", original: "Czym chata bogata", translation: "千万别客气", category: "社会文化", strategy: "意译", note: "Czym chata bogata是波兰传统待客谚语，译文采用意译，与中文语境下的待客相匹配皮，但也丢失原文波兰民间淳朴待客的文化内涵。" },
+            { id: 39, movie: "VINCI（盗走达芬奇）", original: "pojeby", translation: "疯子", category: "语言文化", strategy: "直译", note: "“pojeby”属于波兰语中的粗俗辱骂类词汇，表达情绪与贬义，译为“疯子”保留贬义，符合批判语气" },
+            { id: 40, movie: "VINCI（盗走达芬奇）", original: "kapliczki", translation: "供起来", category: "社会文化", strategy: "意译", note: "kapliczki意为小礼拜堂、家庭神龛，体现波兰民间普遍的天主教家庭宗教习俗，具有鲜明波兰文化特征，译文口语化，丢失了波兰天主教文化里的专属内涵。" },
+            { id: 41, movie: "VINCI（盗走达芬奇）", original: "pogięło cię", translation: "你疯啦", category: "语言文化", strategy: "意译", note: "特有俚语修辞，意译为“你是不是疯了？”，既传递情绪，又保留语言文化内涵" },
+            { id: 42, movie: "VINCI（盗走达芬奇）", original: "gówno warta", translation: "白偷了", category: "语言文化", strategy: "意译", note: "“gówno warta”是底层市井粗口，此处意译，丢失了脏话的情绪内涵" },
+            { id: 43, movie: "VINCI（盗走达芬奇）", original: "zerem", translation: "草包", category: "语言文化", strategy: "意译", note: "jest zerem是波兰口语，此处翻译舍弃字面“零”的含义，意译贴合中文口语贬义表达，精准传递核心语义" },
+            { id: 44, movie: "VINCI（盗走达芬奇）", original: "Kota w worku", translation: "看都没看", category: "语言文化", strategy: "意译", note: "Kota w worku是波兰固定习语，指不看实物、盲目购买，译文准确传达字面含义，但丢失了波兰语特有谚语的文化形式与民族语言印记。" },
+            { id: 45, movie: "VINCI（盗走达芬奇）", original: "tournée", translation: "展出", category: "社会文化", strategy: "省略,意译", note: "意译贴合艺术领域的中文表达，还原“艺术品巡回展出”的核心含义" },
+            { id: 46, movie: "VINCI（盗走达芬奇）", original: "freak", translation: "狂热的", category: "语言文化", strategy: "意译,替代", note: "“freak”意译贴合中文文化领域表达，还原“痴迷者”核心含义" },
+            { id: 47, movie: "VINCI（盗走达芬奇）", original: "dziadku", translation: "爷爷", category: "社会文化", strategy: "意译", note: "“dziadku”意译贴合中文口语称呼，无文化损失" },
+            { id: 48, movie: "VINCI（盗走达芬奇）", original: "zajebisty", translation: "天才", category: "语言文化", strategy: "意译", note: "“zajebisty”舍弃脏话字面意译“天才”，保留褒义" },
+            
+            // 冷战 (Zimna wojna) 数据
+            { id: 49, movie: "Zimna wojna(冷战)", original: "Pana Boga", translation: "/", category: "观念文化", strategy: "省略", note: "原文为波兰语宗教表达 “上帝”，在译文中被完全删除，未保留任何对应信息" },
+            { id: 50, movie: "Zimna wojna(冷战)", original: "szkoda", translation: "可惜了", category: "观念文化", strategy: "直译", note: "波兰语 “Szkoda” 核心语义为 “遗憾、可惜、损失”，中文 “可惜了” 在情感色彩和使用场景上高度对应，直接传达了原文的惋惜感，无文化信息损耗。" },
+            { id: 51, movie: "Zimna wojna(冷战)", original: "Panie Kaczmarek", translation: "/", category: "社会文化", strategy: "省略", note: "原文 “Panie Kaczmarek” 是对男性 “Kaczmarek” 的尊称 “卡奇马雷克先生”，在译文中被完全省略，丢失了称谓信息和社交语境。" },
+            { id: 52, movie: "Zimna wojna(冷战)", original: "pańszczyźnianych polach", translation: "奴隶制", category: "观念文化", strategy: "替代", note: "原文 “pańszczyzna” 指波兰历史上的农奴制，与现代 “奴隶制”（slavery）在制度内涵、历史背景上存在差异。译文用中文中更具普遍性的 “奴隶制” 进行功能替代，简化了特定历史语境。" },
+            { id: 53, movie: "Zimna wojna(冷战)", original: "pod czujnym okiem", translation: "监督下", category: "语言文化", strategy: "意译", note: "原文为波兰语固定习语 “在敏锐的目光下”，译文舍弃形象，意译为 “监督下”，保留核心含义。" },
+            { id: 54, movie: "Zimna wojna(冷战)", original: "Janków Muzykantów", translation: "/", category: "观念文化", strategy: "省略", note: "原文特指波兰民间文学经典形象「扬克音乐家们」，是特定文化典故，译文完全未译出该专有文化形象。" },
+            { id: 55, movie: "Zimna wojna(冷战)", original: "Podhala", translation: "/", category: "生态文化", strategy: "省略", note: "原文为波兰特定地名 “波哈勒山区”，译文完全未译出该地理文化信息。" },
+            { id: 56, movie: "Zimna wojna(冷战)", original: "Tomaszowa", translation: "/", category: "生态文化", strategy: "省略", note: "原文为波兰地名 “托马舒夫”，译文未保留该具体地名信息。" },
+            { id: 57, movie: "Zimna wojna(冷战)", original: "Bajerantka", translation: "不是什么令人惊讶的事", category: "语言文化", strategy: "意译", note: "原文为波兰方言 / 口语词汇，译文舍弃原词形象与含义，重新概括为 “不是什么令人惊讶的事”，仅传达整体语气。" },
+            { id: 58, movie: "Zimna wojna(冷战)", original: "kurwa", translation: "他妈的", category: "语言文化", strategy: "直译", note: "原文为波兰语粗俗感叹词，译文直接使用中文对应粗俗用语，语义、语气、功能完全对等。" },
+            { id: 59, movie: "Zimna wojna(冷战)", original: "reformie rolnej", translation: "土地改革", category: "社会文化", strategy: "直译", note: "原文 “改革 rolnej” 直译为农业 / 土地改革，译文直接对应，语义一致。" },
+            { id: 60, movie: "Zimna wojna(冷战)", original: "światowym pokoju, jego zagrożeniach", translation: "世界和平的威胁", category: "社会文化", strategy: "直译", note: "原文 “世界和平及其威胁” 与译文结构、含义基本对应，直接翻译。" },
+            { id: 61, movie: "Zimna wojna(冷战)", original: "wodzu światowego proletariatu", translation: "全球无产阶级领袖", category: "观念文化", strategy: "直译", note: "原文 “世界无产阶级领袖” 为政治观念类词汇，译文直接对应直译，概念一致。" },
+            { id: 62, movie: "Zimna wojna(冷战)", original: "Mazurka", translation: "大家", category: "生态文化", strategy: "替代", note: "原文指波兰马祖里地区人群，译文用中文泛指 “大家” 替代，省略地域文化特指。" },
+            { id: 63, movie: "Zimna wojna(冷战)", original: "wielkich patriotów i rewolucjonistów", translation: "伟大的爱国者和革命者", category: "观念文化", strategy: "直译", note: "原文 “伟大的爱国者和革命者” 与译文语义、情感色彩完全对应，直接直译。" },
+            { id: 64, movie: "Zimna wojna(冷战)", original: "Feliksa Dzierżyńskiego", translation: "费利克斯捷尔任斯基", category: "观念文化", strategy: "音译", note: "原文为波兰历史专有名词，采用中文通用音译，保留人物身份信息。" },
+            { id: 65, movie: "Zimna wojna(冷战)", original: "Karola Świerczewskiego", translation: "卡罗尔斯维尔斯基", category: "观念文化", strategy: "音译", note: "原文为波兰历史专有名词，采用中文音译处理，准确对应人物姓名。" },
+            { id: 66, movie: "Zimna wojna(冷战)", original: "festiwal młodzieży", translation: "青年节", category: "社会文化", strategy: "替代", note: "原文 “青年节 / 青年联欢节”，译文用中文常见节日概念 “青年节” 进行功能替代。" },
+            { id: 67, movie: "Zimna wojna(冷战)", original: "Bóg wie gdzie", translation: "上帝知道我们明天会去哪里", category: "语言文化", strategy: "意译", note: "原文为波兰语常用表达 “天晓得去哪儿”，译文按中文口语习惯重组，保留不确定、调侃的语气。" },
+            { id: 68, movie: "Zimna wojna(冷战)", original: "Pan spojrzy na jej oczy.", translation: "上帝保佑", category: "语言文化", strategy: "意译", note: "原文意为 “您看看她的眼睛”，译文与原文字面、含义均不对应。" },
+            { id: 69, movie: "Zimna wojna(冷战)", original: "Wolnej", translation: "轻音乐", category: "语言文化", strategy: "意译", note: "原文应为电台 / 节目名，译文联系电影里的语境，翻译为 “轻音乐”。" },
+            { id: 70, movie: "Zimna wojna(冷战)", original: "Kurwa, idiotka", translation: "我真蠢", category: "语言文化", strategy: "意译", note: "原文为粗俗辱骂 “妈的，蠢货”，译文弱化处理为委婉自责。" },
+            { id: 71, movie: "Zimna wojna(冷战)", original: "burżuju", translation: "资产阶级走狗", category: "观念文化", strategy: "意译", note: "原文是对 “资产阶级” 的辱骂，译文用中文对应政治骂语替换。" },
+            { id: 72, movie: "Zimna wojna(冷战)", original: "Bez łaski", translation: "冷酷无情的家伙", category: "语言文化", strategy: "意译", note: "原文 “毫无怜悯、冷酷”，译文转译为骂人称呼。" },
+            { id: 73, movie: "Zimna wojna(冷战)", original: "pies cię jebał", translation: "/", category: "语言文化", strategy: "省略", note: "原文为极粗俗脏话，译文完全省略、不保留粗俗含义。" },
+            { id: 74, movie: "Zimna wojna(冷战)", original: "Ogród Saski", translation: "/", category: "生态文化", strategy: "省略", note: "原文 “萨克森花园”（华沙地名），译文省略未译。" },
+            { id: 75, movie: "Zimna wojna(冷战)", original: "załatwiła na amen", translation: "你去死吧", category: "语言文化", strategy: "意译", note: "原文为威胁、诅咒语气，译文用中文对应狠话概括。" },
+            { id: 76, movie: "Zimna wojna(冷战)", original: "kurwy", translation: "妓女", category: "语言文化", strategy: "直译", note: "“kurwy” 是波兰语中对妓女的粗俗、冒犯性称呼，属于脏话和禁忌语范畴，归为语言文化。译文 “妓女” 采用直译，准确传达了原文的核心指称，但丢失了其强烈的冒犯色彩和口语粗鄙性。在更正式或敏感语境中，可考虑意译为 “你去找过女人吗？” 等委婉表达，以降低语用冒犯度。" },
+            { id: 77, movie: "Zimna wojna(冷战)", original: "pan", translation: "你", category: "社会文化", strategy: "意译", note: "pan 是对男性的正式礼貌用句 “您”，译文未直译礼貌结构，改用口语化 “你”，贴合日常对话语气。" },
+            { id: 78, movie: "Zimna wojna(冷战)", original: "Dzień dobry", translation: "好久不见", category: "语言文化", strategy: "意译", note: "原意是“你好”的意思，但在此处主人公很久不见，根据时间和场景翻译为“好久不见”。" },
+            { id: 79, movie: "Zimna wojna(冷战)", original: "bilet", translation: "歌单", category: "语言文化", strategy: "意译", note: "“bilet”原意是票的意思，在此处根据场景翻译为歌单。" },
+            { id: 80, movie: "Zimna wojna(冷战)", original: "stronę gospodarzy", translation: "东道主", category: "语言文化", strategy: "意译", note: "前一个词的意思为“方向”，后一个词的意思为“主人的”，和在一起根据场景翻译为“东道主”。" },
+            { id: 81, movie: "Zimna wojna(冷战)", original: "miło", translation: "不错", category: "语言文化", strategy: "意译", note: "本意是“美好的”，此处可以引申为“不错”。" },
+            { id: 82, movie: "Zimna wojna(冷战)", original: "szkoda", translation: "可惜", category: "语言文化", strategy: "意译", note: "原意是“伤痛”，“损坏”的意思，在此处单独成句，表示可惜的感叹。" },
+            { id: 83, movie: "Zimna wojna(冷战)", original: "niekościelny", translation: "未经教堂授权的", category: "社会文化", strategy: "直译", note: "二战时期，在波兰，对于天主教信徒来说，教堂婚礼是婚姻圣事，不可或缺；仅民事婚姻在教会内不被视为有效婚姻。此处的婚姻未被教堂承认，所以角色认为不算真正成婚。" },
+            { id: 84, movie: "Zimna wojna(冷战)", original: "góralkę", translation: "山地人", category: "观念文化", strategy: "直译", note: "波兰Górale（山地人/波德哈莱高地人）在二战的抵抗与生活，核心是：对抗纳粹“Goralenvolk”日耳曼化、用山地优势打游击、做秘密信使/走私、坚守族群与波兰认同。这里用山地人的典故塑造出一个对苏联的抵抗形象。" },
+            { id: 85, movie: "Zimna wojna(冷战)", original: "Giovanni", translation: "唐璜", category: "观念文化", strategy: "直译", note: "唐璜，Don Giovanni，是全世界都有名的“情圣+浪子”。在此用典故指花心的人。" }
+        ];
+
+        // ==================== 全 局 变 量 ====================
+        let currentSort = { column: 'movie', direction: 'asc' };
+        
+        // ==================== 辅 助 函 数 ====================
+        function getMovieClass(movie) {
+            return movie.includes('VINCI') ? 'movie-VINCI' : 'movie-ZIMNA';
+        }
+
+        function formatStrategy(strategy) {
+            if (!strategy || strategy === '/') return '/';
+            return strategy.split(',').map(s => s.trim()).filter(s => s);
+        }
+
+        // ==================== 渲 染 表 格 ====================
+        function renderTable() {
+            const movieFilter = document.getElementById('movieFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const strategyFilter = document.getElementById('strategyFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            // 过滤数据
+            let filteredData = corpusData.filter(item => {
+                // 电影筛选
+                if (movieFilter !== '全部' && item.movie !== movieFilter) return false;
+                
+                // 文化分类筛选
+                if (categoryFilter !== '全部' && item.category !== categoryFilter) return false;
+                
+                // 翻译策略筛选
+                if (strategyFilter !== '全部') {
+                    const strategies = item.strategy.split(',').map(s => s.trim());
+                    if (!strategies.includes(strategyFilter)) return false;
+                }
+                
+                // 关键词搜索
+                if (searchTerm) {
+                    return item.original.toLowerCase().includes(searchTerm) ||
+                           item.translation.toLowerCase().includes(searchTerm) ||
+                           (item.note && item.note.toLowerCase().includes(searchTerm));
+                }
+                
+                return true;
+            });
+
+            // 排序
+            filteredData.sort((a, b) => {
+                let aVal = a[currentSort.column];
+                let bVal = b[currentSort.column];
+                
+                if (currentSort.column === 'id') {
+                    return currentSort.direction === 'asc' ? aVal - bVal : bVal - aVal;
+                }
+                
+                aVal = String(aVal || '');
+                bVal = String(bVal || '');
+                const comparison = aVal.localeCompare(bVal, 'zh');
+                return currentSort.direction === 'asc' ? comparison : -comparison;
+            });
+
+            // 生成表格HTML
+            const tbody = document.getElementById('tableBody');
+            let html = '';
+            
+            filteredData.forEach(item => {
+                const strategies = formatStrategy(item.strategy);
+                
+                html += `<tr>
+                    <td><span class="movie-badge ${getMovieClass(item.movie)}">${item.movie}</span></td>
+                    <td><strong>${item.original}</strong></td>
+                    <td>${item.translation || '/'}</td>
+                    <td><span class="category-tag">${item.category}</span></td>
+                    <td>${strategies.map(s => `<span class="strategy-tag">${s}</span>`).join('')}</td>
+                    <td class="note-cell">${item.note || ''}</td>
+                </tr>`;
+            });
+
+            if (filteredData.length === 0) {
+                html = `<tr><td colspan="6" class="no-data">没有找到符合筛选条件的语料条目</td></tr>`;
+            }
+
+            tbody.innerHTML = html;
+
+            // 更新统计
+            updateStats(filteredData.length);
+            
+            // 更新排序图标
+            updateSortIcons();
+        }
+
+        // ==================== 更 新 统 计 ====================
+        function updateStats(count) {
+            document.getElementById('totalCount').textContent = count;
+            
+            // 计算各分类统计
+            const categoryCount = {};
+            corpusData.forEach(item => {
+                categoryCount[item.category] = (categoryCount[item.category] || 0) + 1;
+            });
+            
+            const statsHtml = Object.entries(categoryCount).map(([cat, num]) => 
+                `<div class="stat-card">${cat}: <strong>${num}</strong> 条</div>`
+            ).join('');
+            
+            document.getElementById('statsContainer').innerHTML = statsHtml;
+        }
+
+        // ==================== 更 新 排 序 图 标 ====================
+        function updateSortIcons() {
+            document.querySelectorAll('th').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+                const sortBy = th.getAttribute('data-sort');
+                if (sortBy === currentSort.column) {
+                    th.classList.add(currentSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+                }
+            });
+        }
+
+        // ==================== 初 始 化 和 事 件 绑 定 ====================
+        window.onload = function() {
+            // 初始渲染
+            renderTable();
+
+            // 绑定筛选事件
+            document.getElementById('movieFilter').addEventListener('change', renderTable);
+            document.getElementById('categoryFilter').addEventListener('change', renderTable);
+            document.getElementById('strategyFilter').addEventListener('change', renderTable);
+            document.getElementById('searchInput').addEventListener('input', renderTable);
+
+            // 绑定排序事件
+            document.querySelectorAll('th[data-sort]').forEach(th => {
+                th.addEventListener('click', function() {
+                    const column = this.getAttribute('data-sort');
+                    if (currentSort.column === column) {
+                        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        currentSort.column = column;
+                        currentSort.direction = 'asc';
+                    }
+                    renderTable();
+                });
+            });
+        };
+
+        // ==================== 重 置 筛 选 ====================
+        function resetFilters() {
+            document.getElementById('movieFilter').value = '全部';
+            document.getElementById('categoryFilter').value = '全部';
+            document.getElementById('strategyFilter').value = '全部';
+            document.getElementById('searchInput').value = '';
+            currentSort = { column: 'movie', direction: 'asc' };
+            renderTable();
+        }
+    </script>
+</body>
+</html>
